@@ -1,13 +1,114 @@
-<!doctype html>
+<!--Programmed by Taylor Coffey
+Date: 11/23/26
+Program 5 for CIT 140
+This program is designed to read student information from a JSON file
+and display the students in a table based on their major.
+-->
+
+<!DOCTYPE HTML>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>test</title>
+
+    <title>Program 5: Students by Major</title>
+
+    <!--Bootstrap stylesheet-->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+    <!--Handlebars library-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.8/handlebars.min.js"></script>
+
+    <script type="text/javaScript">
+        var students = [];
+
+        // Read the JSON file using an Ajax request
+        function loadStudents()
+        {
+            var request = new XMLHttpRequest();
+
+            request.onreadystatechange = function()
+            {
+                if (request.readyState == 4)
+                {
+                    if (request.status == 200)
+                    {
+                        students = JSON.parse(request.responseText);
+                    }
+                    else
+                    {
+                        document.getElementById("results").innerHTML =
+                            "The student data could not be loaded.";
+                    }
+                }
+            };
+
+            request.open("GET", "cit5students.json", true);
+            request.send();
+        }
+
+        function displayMajor(major)
+        {
+            var filteredStudents;
+            var source;
+            var template;
+            var tableHTML;
+
+            // Filter the students by major
+            filteredStudents = students.filter(function(student)
+            {
+                return student.major == major;
+            });
+
+            // Sort the students alphabetically by name
+            filteredStudents.sort(function(a, b)
+            {
+                return a.name.localeCompare(b.name);
+            });
+
+            // Get the Handlebars template
+            source = document.getElementById("student-template").innerHTML;
+            template = Handlebars.compile(source);
+            tableHTML = template({students: filteredStudents});
+
+            document.getElementById("results").innerHTML = tableHTML;
+        }
+    </script>
 </head>
-<body>
+<body onload="loadStudents()">
 
-<h1>Github Index Page</h1>
+    <div class="container">
+        <h2>Select a Major</h2>
 
-<p>Hello Github!</p>
+        <button type="button" class="btn btn-default"
+            onclick="displayMajor('CIT')">CIT Majors</button>
 
-</body></html>
+        <button type="button" class="btn btn-default"
+            onclick="displayMajor('BUS')">Business Majors</button>
+
+        <h3>We filter our dataset by major</h3>
+
+        <div id="results"></div>
+    </div>
+
+    <!--Handlebars template used to create the student table-->
+    <script id="student-template" type="text/x-handlebars-template">
+        <table class="table table-striped">
+            <tr>
+                <th>Name</th>
+                <th>Major</th>
+                <th>Midterm</th>
+                <th>Final</th>
+            </tr>
+
+            {{#each students}}
+            <tr>
+                <td>{{name}}</td>
+                <td>{{major}}</td>
+                <td>{{midterm}}</td>
+                <td>{{final}}</td>
+            </tr>
+            {{/each}}
+        </table>
+    </script>
+
+</body>
+</html>
